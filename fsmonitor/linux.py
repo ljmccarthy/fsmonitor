@@ -68,9 +68,12 @@ action_map = {
 
 class FSMonitorWatch(object):
     def __init__(self, wd, path, userobj):
-        self.wd = wd
+        self._wd = wd
         self.path = path
         self.userobj = userobj
+
+    def __repr__(self):
+        return "<FSMonitorWatch %r>" % self.path
 
 class FSMonitor(object):
     def __init__(self, path=None):
@@ -80,7 +83,6 @@ class FSMonitor(object):
         self.__fd = fd
         self.__lock = threading.Lock()
         self.__wd_to_watch = {}
-        self.__path_to_watch = {}
         if path is not None:
             self.add_watch(path)
 
@@ -95,24 +97,16 @@ class FSMonitor(object):
         watch = FSMonitorWatch(wd, path, userobj)
         with self.__lock:
             self.__wd_to_watch[wd] = watch
-            self.__path_to_watch[path] = watch
+        return watch
 
-    def remove_watch(self, path):
-        with self.__lock:
-            watch = self.__path_to_watch.get(path)
-            if watch is None:
-                return False
-        if inotify_rm_watch(self.__fd, watch.wd) == -1:
-            raise FSMonitorOSError(get_errno(), "inotify_rm_watch failed")
-        with self.__lock:
-            try:
-                del self.__path_to_watch[path]
-            except KeyError:
-                pass
-        return True
+    def remove_watch(self, watch):
+        return inotify_rm_watch(self.__fd, watch._wd) != -1
 
-    def read_events(self, timeout=None):
-        s = os.read(self.__fd, 1024)
+    def read_events(self):
+        try:
+            s = os.read(self.__fd, 1024)
+        except OSError, e:
+            raise FSMonitorOSError(*e.args)
         i = 0
         while i + 16 < len(s):
             wd, mask, cookie, length = struct.unpack_from("iIII", s, i)
@@ -126,7 +120,7 @@ class FSMonitor(object):
                     if mask & bit:
                         action = action_map.get(bit)
                         if action is not None:
-                            yield FSMonitorEvent(watch.path, name, action, watch.userobj)
+                            yield FSMonitorEvent(watch, action, name)
                     bit <<= 1
                 if mask & IN_IGNORED:
                     with self.__lock:
@@ -138,4 +132,4 @@ class FSMonitor(object):
     @property
     def watches(self):
         with self.__lock:
-            return self.__path_to_watch.values()
+            return self.__wd_to_watch.values()

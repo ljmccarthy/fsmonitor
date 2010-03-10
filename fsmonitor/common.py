@@ -25,9 +25,20 @@ class FSMonitorOSError(OSError, FSMonitorError):
     pass
 
 class FSMonitorEvent(object):
-    def __init__(self, path, name, action, userobj):
-        self.path = path
+    def __init__(self, watch, action, name):
+        self.watch = watch
         self.name = name
         self.action = action
         self.action_name = fs_evt_name[action]
-        self.userobj = userobj
+
+    @property
+    def path(self):
+        return self.watch.path
+
+    @property
+    def userobj(self):
+        return self.watch.userobj
+
+    @userobj.setter
+    def userobj(self, userobj):
+        self.watch.userobj = userobj

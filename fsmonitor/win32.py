@@ -39,26 +39,31 @@ def ReadDirChanges(hDir, buf, recursive, overlapped):
         win32con.FILE_NOTIFY_CHANGE_SECURITY,
         overlapped, None)
 
+class FSMonitorWindowsError(WindowsError, FSMonitorError):
+    pass
+
 class FSMonitorWatch(object):
     def __init__(self, path, recursive, userobj):
         self.path = path
-        self.recursive = recursive
         self.userobj = userobj
-        self.key = None
-        self.hDir = GetDirHandle(path)
-        self.overlapped = pywintypes.OVERLAPPED()
-        self.buf = ctypes.create_string_buffer(1024)
-        self.removed = False
+        self._recursive = recursive
+        self._key = None
+        self._hDir = GetDirHandle(path)
+        self._overlapped = pywintypes.OVERLAPPED()
+        self._buf = ctypes.create_string_buffer(1024)
+        self._removed = False
 
     def __del__(self):
-        if hasattr(self, "hDir"):
+        if self._hDir is not None:
             import win32file
-            win32file.CloseHandle(self.hDir)
-            del self.hDir
+            win32file.CloseHandle(self._hDir)
+            self._hDir = None
+
+    def __repr__(self):
+        return "<FSMonitorWatch %r>" % self.path
 
 class FSMonitor(object):
     def __init__(self, path=None, recursive=False):
-        self.__path_to_watch = {}
         self.__key_to_watch = {}
         self.__last_key = 0
         self.__lock = threading.Lock()
@@ -75,57 +80,59 @@ class FSMonitor(object):
         del self.__cphandle
 
     def add_watch(self, path, userobj=None, recursive=False):
-        watch = FSMonitorWatch(path, recursive, userobj)
-        with self.__lock:
-            key = self.__last_key
-            win32file.CreateIoCompletionPort(watch.hDir, self.__cphandle, key, 0)
-            self.__last_key += 1
-            ReadDirChanges(watch.hDir, watch.buf, recursive, watch.overlapped)
-            watch.key = key
-            self.__key_to_watch[key] = watch
-            self.__path_to_watch[path] = watch
+        try:
+            watch = FSMonitorWatch(path, recursive, userobj)
+            with self.__lock:
+                key = self.__last_key
+                win32file.CreateIoCompletionPort(watch._hDir, self.__cphandle, key, 0)
+                self.__last_key += 1
+                ReadDirChanges(watch._hDir, watch._buf, recursive, watch._overlapped)
+                watch._key = key
+                self.__key_to_watch[key] = watch
+            return watch
+        except pywintypes.error, e:
+            raise FSMonitorWindowsError(*e.args)
 
-    def remove_watch(self, path):
+    def remove_watch(self, watch):
         with self.__lock:
-            watch = self.__path_to_watch.get(path)
-            if watch is not None and not watch.removed:
-                watch.removed = True
-                win32file.CancelIo(watch.hDir)
-                win32file.PostQueuedCompletionStatus(self.__cphandle, 0, watch.key, watch.overlapped)
-                return True
+            if not watch._removed:
+                try:
+                    watch._removed = True
+                    win32file.CancelIo(watch._hDir)
+                    win32file.PostQueuedCompletionStatus(self.__cphandle, 0, watch._key, watch._overlapped)
+                    win32file.CloseHandle(watch._hDir)
+                    watch._hDir = None
+                    return True
+                except pywintypes.error:
+                    pass
         return False
 
-    def __remove(self, watch):
-        del self.__key_to_watch[watch.key]
-        del self.__path_to_watch[watch.path]
-
-    def read_events(self, timeout=None):
-        if timeout is not None and timeout < 0:
-            raise FSMonitorError("Timeout must be positive or None")
-        if timeout is None:
-            timeout = -1
-        rc, num, key, _ = win32file.GetQueuedCompletionStatus(self.__cphandle, timeout)
-        if rc == 0:
-            with self.__lock:
-                watch = self.__key_to_watch.get(key)
-                if watch is not None:
-                    if watch.removed:
-                        self.__remove(watch)
-                        yield FSMonitorEvent(watch.path, "", FSEVT_DELETE_SELF, watch.userobj)
-                    else:
-                        for action, name in win32file.FILE_NOTIFY_INFORMATION(watch.buf.raw, num):
-                            action = action_map.get(action)
-                            if action is not None:
-                                yield FSMonitorEvent(watch.path, name, action, watch.userobj)
-                        ReadDirChanges(watch.hDir, watch.buf, watch.recursive, watch.overlapped)
-        elif rc == 5:
-            with self.__lock:
-                watch = self.__key_to_watch.get(key)
-                if watch is not None:
-                    self.__remove(watch)
-                    yield FSMonitorEvent(watch.path, "", FSEVT_DELETE_SELF, watch.userobj)
+    def read_events(self):
+        try:
+            rc, num, key, _ = win32file.GetQueuedCompletionStatus(self.__cphandle, -1)
+            if rc == 0:
+                with self.__lock:
+                    watch = self.__key_to_watch.get(key)
+                    if watch is not None:
+                        if watch._removed:
+                            del self.__key_to_watch[watch._key]
+                        else:
+                            for action, name in win32file.FILE_NOTIFY_INFORMATION(watch._buf.raw, num):
+                                action = action_map.get(action)
+                                if action is not None:
+                                    yield FSMonitorEvent(watch, action, name)
+                            ReadDirChanges(watch._hDir, watch._buf, watch._recursive, watch._overlapped)
+            elif rc == 5:
+                with self.__lock:
+                    watch = self.__key_to_watch.get(key)
+                    if watch is not None:
+                        win32file.CloseHandle(watch._hDir)
+                        watch._hDir = None
+                        yield FSMonitorEvent(watch, FSEVT_DELETE_SELF, "")
+        except pywintypes.error, e:
+            raise FSMonitorWindowsError(*e.args)
 
     @property
     def watches(self):
         with self.__lock:
-            return self.__path_to_watch.values()
+            return self.__key_to_watch.values()

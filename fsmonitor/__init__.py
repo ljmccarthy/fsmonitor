@@ -19,10 +19,10 @@ class FSMonitorThread(Thread):
         self.start()
 
     def add_watch(self, path, userobj=None):
-        self.__monitor.add_watch(path, userobj)
+        return self.__monitor.add_watch(path, userobj)
 
-    def remove_watch(self, path):
-        self.__monitor.remove_watch(path)
+    def remove_watch(self, watch):
+        self.__monitor.remove_watch(watch)
 
     def run(self):
         while self.__running:
