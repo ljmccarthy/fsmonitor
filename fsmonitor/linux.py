@@ -2,6 +2,9 @@ import os, struct, threading
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32
 from .common import *
 
+# set to None when unloaded
+module_loaded = True
+
 libc = CDLL("libc.so.6")
 
 errno_location = CFUNCTYPE(POINTER(c_int))(("__errno_location", libc))
@@ -66,6 +69,14 @@ action_map = {
     IN_DELETE_SELF : FSEVT_DELETE_SELF,
 }
 
+def parse_events(s):
+    i = 0
+    while i + 16 < len(s):
+        wd, mask, cookie, length = struct.unpack_from("iIII", s, i)
+        name = s[i+16:i+16+length].rstrip("\0")
+        i += 16 + length
+        yield wd, mask, cookie, name
+
 class FSMonitorWatch(object):
     def __init__(self, wd, path, userobj):
         self._wd = wd
@@ -87,8 +98,8 @@ class FSMonitor(object):
             self.add_watch(path)
 
     def __del__(self):
-        import os
-        os.close(self.__fd)
+        if module_loaded:
+            os.close(self.__fd)
 
     def add_watch(self, path, userobj=None):
         wd = inotify_add_watch(self.__fd, path, flags)
@@ -107,11 +118,9 @@ class FSMonitor(object):
             s = os.read(self.__fd, 1024)
         except OSError, e:
             raise FSMonitorOSError(*e.args)
-        i = 0
-        while i + 16 < len(s):
-            wd, mask, cookie, length = struct.unpack_from("iIII", s, i)
-            name = s[i+16:i+16+length].rstrip("\0")
-            i += 16 + length
+        if not module_loaded:
+            return
+        for wd, mask, cookie, name in parse_events(s):
             with self.__lock:
                 watch = self.__wd_to_watch.get(wd)
             if watch is not None:

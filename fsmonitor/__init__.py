@@ -2,6 +2,9 @@ import sys
 from threading import Thread
 from .common import *
 
+# set to None when unloaded
+module_loaded = True
+
 if sys.platform == "linux2":
     from .linux import FSMonitor
 elif sys.platform == "win32":
@@ -25,7 +28,7 @@ class FSMonitorThread(Thread):
         self.__monitor.remove_watch(watch)
 
     def run(self):
-        while self.__running:
+        while module_loaded and self.__running:
             for event in self.__monitor.read_events():
                 self.__callback(event)
 

@@ -25,7 +25,7 @@ class FSMonitorOSError(OSError, FSMonitorError):
     pass
 
 class FSMonitorEvent(object):
-    def __init__(self, watch, action, name):
+    def __init__(self, watch, action, name=""):
         self.watch = watch
         self.name = name
         self.action = action
