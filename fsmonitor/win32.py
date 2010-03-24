@@ -132,8 +132,6 @@ class FSMonitor(object):
             if not watch._removed:
                 try:
                     watch._removed = True
-                    win32file.PostQueuedCompletionStatus(
-                        self.__cphandle, 0, watch._key, watch._overlapped)
                     watch._close()
                     return True
                 except pywintypes.error:
