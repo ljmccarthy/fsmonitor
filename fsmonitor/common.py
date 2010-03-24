@@ -1,11 +1,12 @@
-FSEVT_ACCESS      = 1
-FSEVT_MODIFY      = 2
-FSEVT_ATTRIB      = 3
-FSEVT_CREATE      = 4
-FSEVT_DELETE      = 5
-FSEVT_DELETE_SELF = 6
-FSEVT_MOVE_TO     = 7
-FSEVT_MOVE_FROM   = 8
+FSEVT_ACCESS      = 0x01
+FSEVT_MODIFY      = 0x02
+FSEVT_ATTRIB      = 0x04
+FSEVT_CREATE      = 0x08
+FSEVT_DELETE      = 0x10
+FSEVT_DELETE_SELF = 0x20
+FSEVT_MOVE_FROM   = 0x40
+FSEVT_MOVE_TO     = 0x80
+FSEVT_ALL         = 0xFF
 
 fs_evt_name = {
     FSEVT_ACCESS      : "access",
@@ -36,9 +37,5 @@ class FSMonitorEvent(object):
         return self.watch.path
 
     @property
-    def userobj(self):
-        return self.watch.userobj
-
-    @userobj.setter
-    def userobj(self, userobj):
-        self.watch.userobj = userobj
+    def user(self):
+        return self.watch.user

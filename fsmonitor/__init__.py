@@ -21,8 +21,11 @@ class FSMonitorThread(Thread):
         self.daemon = True
         self.start()
 
-    def add_watch(self, path, userobj=None):
-        return self.__monitor.add_watch(path, userobj)
+    def add_dir_watch(self, path, flags=FSEVT_ALL, user=None):
+        return self.__monitor.add_dir_watch(path, flags=flags, user=user)
+
+    def add_file_watch(self, path, flags=FSEVT_ALL, user=None):
+        return self.__monitor.add_file_watch(path, flags=flags, user=user)
 
     def remove_watch(self, watch):
         self.__monitor.remove_watch(watch)
