@@ -11,10 +11,15 @@ errno_location = CFUNCTYPE(POINTER(c_int))(("__errno_location", libc))
 def get_errno():
     return errno_location().contents.value
 
+strerror = CFUNCTYPE(c_char_p, c_int)(
+    ("strerror", libc))
+
 inotify_init = CFUNCTYPE(c_int, use_errno=True)(
     ("inotify_init", libc))
+
 inotify_add_watch = CFUNCTYPE(c_int, c_int, c_char_p, c_uint32, use_errno=True)(
     ("inotify_add_watch", libc))
+
 inotify_rm_watch = CFUNCTYPE(c_int, c_int, c_int, use_errno=True)(
     ("inotify_rm_watch", libc))
 
@@ -99,7 +104,8 @@ class FSMonitor(object):
     def __init__(self):
         fd = inotify_init()
         if fd == -1:
-            raise FSMonitorOSError(get_errno(), "inotify_init failed")
+            errno = get_errno()
+            raise FSMonitorOSError(errno, strerror(errno))
         self.__fd = fd
         self.__lock = threading.Lock()
         self.__wd_to_watch = {}
@@ -113,7 +119,8 @@ class FSMonitor(object):
         inotify_flags = convert_flags(flags)
         wd = inotify_add_watch(self.__fd, path, inotify_flags)
         if wd == -1:
-            raise FSMonitorOSError(get_errno(), "inotify_add_watch failed")
+            errno = get_errno()
+            raise FSMonitorOSError(errno, strerror(errno))
         watch = FSMonitorWatch(wd, path, flags, user)
         with self.__lock:
             self.__wd_to_watch[wd] = watch
