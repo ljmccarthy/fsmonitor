@@ -6,6 +6,6 @@ setup(
     description = "Filesystem monitoring",
     author = "Luke McCarthy",
     author_email = "luke@iogopro.co.uk",
-    url = "http://",
+    url = "http://github.com/shaurz/fsmonitor",
     packages = ["fsmonitor"],
 )
