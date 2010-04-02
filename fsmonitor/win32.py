@@ -38,7 +38,7 @@ def convert_flags(flags):
         flag <<= 1
     return os_flags
 
-def GetDirHandle(path):
+def get_dir_handle(path):
     return win32file.CreateFile(
         path,
         FILE_LIST_DIRECTORY,
@@ -59,35 +59,39 @@ class FSMonitorWatch(object):
         self._recursive = recursive
         self._win32_flags = convert_flags(flags)
         self._key = None
-        self._hDir = GetDirHandle(path)
+        self._hDir = get_dir_handle(path)
         self._overlapped = pywintypes.OVERLAPPED()
         self._buf = ctypes.create_string_buffer(1024)
         self._removed = False
 
-    def _close(self):
-        win32file.CancelIo(self._hDir)
-        win32file.CloseHandle(self._hDir)
-        self._hDir = None
-
     def __del__(self):
-        if module_loaded and self._hDir is not None:
-            self._close()
+        if module_loaded:
+            close_watch(self)
 
     def __repr__(self):
         return "<FSMonitorWatch %r>" % self.path
 
-def _process_events(watch, num):
+def close_watch(watch):
+    if watch._hDir is not None:
+        win32file.CancelIo(watch._hDir)
+        win32file.CloseHandle(watch._hDir)
+        watch._hDir = None
+
+def read_changes(watch):
+    win32file.ReadDirectoryChangesW(
+        watch._hDir, watch._buf, watch._recursive, watch._win32_flags,
+        watch._overlapped, None)
+
+def process_events(watch, num):
     for action, name in win32file.FILE_NOTIFY_INFORMATION(watch._buf.raw, num):
         action = action_map.get(action)
         if action is not None and (action & watch.flags):
             yield FSMonitorEvent(watch, action, name)
     try:
-        win32file.ReadDirectoryChangesW(
-            watch._hDir, watch._buf, watch._recursive, watch._win32_flags,
-            watch._overlapped, None)
+        read_changes(watch)
     except pywintypes.error, e:
         if e.args[0] == 5:
-            watch._close()
+            close_watch(watch)
             yield FSMonitorEvent(watch, FSEVT_DELETE_SELF)
         else:
             raise FSMonitorWindowsError(*e.args)
@@ -115,9 +119,7 @@ class FSMonitor(object):
                 key = self.__last_key
                 win32file.CreateIoCompletionPort(watch._hDir, self.__cphandle, key, 0)
                 self.__last_key += 1
-                win32file.ReadDirectoryChangesW(
-                    watch._hDir, watch._buf, watch._recursive, watch._win32_flags,
-                    watch._overlapped, None)
+                read_changes(watch)
                 watch._key = key
                 self.__key_to_watch[key] = watch
             return watch
@@ -132,7 +134,7 @@ class FSMonitor(object):
             if not watch._removed:
                 try:
                     watch._removed = True
-                    watch._close()
+                    close_watch(watch)
                     return True
                 except pywintypes.error:
                     pass
@@ -145,13 +147,13 @@ class FSMonitor(object):
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
                     if watch is not None and not watch._removed:
-                        for evt in _process_events(watch, num):
+                        for evt in process_events(watch, num):
                             yield evt
             elif rc == 5:
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
                     if watch is not None:
-                        watch._close()
+                        close_watch(watch)
                         del self.__key_to_watch[key]
                         yield FSMonitorEvent(watch, FSEVT_DELETE_SELF)
         except pywintypes.error, e:
