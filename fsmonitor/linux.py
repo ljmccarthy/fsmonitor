@@ -1,15 +1,11 @@
 import os, struct, threading
-from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32
+from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32, get_errno
 from .common import *
 
 # set to None when unloaded
 module_loaded = True
 
 libc = CDLL("libc.so.6")
-
-errno_location = CFUNCTYPE(POINTER(c_int))(("__errno_location", libc))
-def get_errno():
-    return errno_location().contents.value
 
 strerror = CFUNCTYPE(c_char_p, c_int)(
     ("strerror", libc))
