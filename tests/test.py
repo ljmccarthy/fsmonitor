@@ -15,7 +15,7 @@ class TestFSMonitor(object):
     @property
     def events(self):
         with self.__lock:
-            return self.__events
+            return list(self.__events)
 
     def add_dir_watch(self, *args, **kwargs):
         return self.__monitor.add_dir_watch(*args, **kwargs)
