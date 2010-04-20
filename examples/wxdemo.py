@@ -37,6 +37,9 @@ class DemoFrame(wx.Frame):
 
     def OnClose(self, evt):
         self.Hide()
+        wx.CallAfter(self.Shutdown)
+
+    def Shutdown(self):
         self.monitor.stop()
         self.Destroy()
 
