@@ -36,8 +36,9 @@ class FSMonitorThread(Thread):
                 self.__callback(event)
 
     def stop(self):
-        self.__running = False
-        self.join()
+        if self.__monitor.watches:
+            self.__running = False
+            self.join()
 
 __all__ = (
     "FSMonitor",
