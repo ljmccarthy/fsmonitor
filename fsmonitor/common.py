@@ -30,7 +30,10 @@ class FSMonitorEvent(object):
         self.watch = watch
         self.name = name
         self.action = action
-        self.action_name = fs_evt_name[action]
+
+    @property
+    def action_name(self):
+        return fs_evt_name[self.action]
 
     @property
     def path(self):
