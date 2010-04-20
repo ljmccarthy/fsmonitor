@@ -21,10 +21,10 @@ class FSMonitorThread(Thread):
         self.daemon = True
         self.start()
 
-    def add_dir_watch(self, path, flags=FSEVT_ALL, user=None):
+    def add_dir_watch(self, path, flags=FSEvent.All, user=None):
         return self.__monitor.add_dir_watch(path, flags=flags, user=user)
 
-    def add_file_watch(self, path, flags=FSEVT_ALL, user=None):
+    def add_file_watch(self, path, flags=FSEvent.All, user=None):
         return self.__monitor.add_file_watch(path, flags=flags, user=user)
 
     def remove_watch(self, watch):
@@ -45,12 +45,5 @@ __all__ = (
     "FSMonitorThread",
     "FSMonitorError",
     "FSMonitorOSError",
-    "FSEVT_ACCESS",
-    "FSEVT_MODIFY",
-    "FSEVT_ATTRIB",
-    "FSEVT_CREATE",
-    "FSEVT_DELETE",
-    "FSEVT_DELETE_SELF",
-    "FSEVT_MOVE_TO",
-    "FSEVT_MOVE_FROM",
+    "FSEvent",
 )

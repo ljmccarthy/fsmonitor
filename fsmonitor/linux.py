@@ -48,31 +48,31 @@ IN_ISDIR         = 0x40000000     # Event occurred against dir.
 IN_ONESHOT       = 0x80000000     # Only send event once.
 
 action_map = {
-    IN_ACCESS      : FSEVT_ACCESS,
-    IN_MODIFY      : FSEVT_MODIFY,
-    IN_ATTRIB      : FSEVT_ATTRIB,
-    IN_MOVED_FROM  : FSEVT_MOVE_FROM,
-    IN_MOVED_TO    : FSEVT_MOVE_TO,
-    IN_CREATE      : FSEVT_CREATE,
-    IN_DELETE      : FSEVT_DELETE,
-    IN_DELETE_SELF : FSEVT_DELETE_SELF,
+    IN_ACCESS      : FSEvent.Access,
+    IN_MODIFY      : FSEvent.Modify,
+    IN_ATTRIB      : FSEvent.Attrib,
+    IN_MOVED_FROM  : FSEvent.MoveFrom,
+    IN_MOVED_TO    : FSEvent.MoveTo,
+    IN_CREATE      : FSEvent.Create,
+    IN_DELETE      : FSEvent.Delete,
+    IN_DELETE_SELF : FSEvent.DeleteSelf,
 }
 
 flags_map = {
-    FSEVT_ACCESS      : IN_ACCESS,
-    FSEVT_MODIFY      : IN_MODIFY,
-    FSEVT_ATTRIB      : IN_ATTRIB,
-    FSEVT_CREATE      : IN_CREATE,
-    FSEVT_DELETE      : IN_DELETE,
-    FSEVT_DELETE_SELF : IN_DELETE_SELF,
-    FSEVT_MOVE_FROM   : IN_MOVED_FROM,
-    FSEVT_MOVE_TO     : IN_MOVED_TO,
+    FSEvent.Access     : IN_ACCESS,
+    FSEvent.Modify     : IN_MODIFY,
+    FSEvent.Attrib     : IN_ATTRIB,
+    FSEvent.Create     : IN_CREATE,
+    FSEvent.Delete     : IN_DELETE,
+    FSEvent.DeleteSelf : IN_DELETE_SELF,
+    FSEvent.MoveFrom   : IN_MOVED_FROM,
+    FSEvent.MoveTo     : IN_MOVED_TO,
 }
 
 def convert_flags(flags):
     os_flags = 0
     flag = 1
-    while flag < FSEVT_ALL + 1:
+    while flag < FSEvent.All + 1:
         if flags & flag:
             os_flags |= flags_map[flag]
         flag <<= 1
@@ -113,8 +113,8 @@ class FSMonitor(object):
     def close(self):
         os.close(self.__fd)
 
-    def add_dir_watch(self, path, flags=FSEVT_ALL, user=None):
-        flags |= FSEVT_DELETE_SELF
+    def add_dir_watch(self, path, flags=FSEvent.All, user=None):
+        flags |= FSEvent.DeleteSelf
         inotify_flags = convert_flags(flags)
         wd = inotify_add_watch(self.__fd, path, inotify_flags)
         if wd == -1:
@@ -146,7 +146,7 @@ class FSMonitor(object):
                     if mask & bit:
                         action = action_map.get(bit)
                         if action is not None and (action & watch.flags):
-                            yield FSMonitorEvent(watch, action, name)
+                            yield FSEvent(watch, action, name)
                     bit <<= 1
                 if mask & IN_IGNORED:
                     with self.__lock:

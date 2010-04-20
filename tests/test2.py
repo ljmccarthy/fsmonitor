@@ -9,5 +9,5 @@ remove(testpath("x"))
 
 time.sleep(0.1)
 
-assert test.event_happened(FSEVT_CREATE, "x")
-assert not test.event_happened(FSEVT_DELETE, "x")
+assert test.event_happened(FSEvent.Create, "x")
+assert not test.event_happened(FSEvent.Delete, "x")
