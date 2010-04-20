@@ -108,7 +108,10 @@ class FSMonitor(object):
 
     def __del__(self):
         if module_loaded:
-            os.close(self.__fd)
+            self.close()
+
+    def close(self):
+        os.close(self.__fd)
 
     def add_dir_watch(self, path, flags=FSEVT_ALL, user=None):
         flags |= FSEVT_DELETE_SELF
