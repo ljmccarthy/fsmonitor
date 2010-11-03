@@ -108,8 +108,9 @@ class FSMonitor(object):
             self.close()
 
     def close(self):
-        win32file.CloseHandle(self.__cphandle)
-        del self.__cphandle
+        if self.__cphandle is not None:
+            win32file.CloseHandle(self.__cphandle)
+            self.__cphandle = None
 
     def add_dir_watch(self, path, flags=FSEvent.All, user=None, recursive=False):
         try:
@@ -129,16 +130,24 @@ class FSMonitor(object):
     def add_file_watch(self, path, flags=FSEvent.All, user=None):
         raise NotImplementedError()
 
+    def __remove_watch(self, watch):
+        if not watch._removed:
+            try:
+                watch._removed = True
+                close_watch(watch)
+                return True
+            except pywintypes.error:
+                pass
+        return False
+
     def remove_watch(self, watch):
         with self.__lock:
-            if not watch._removed:
-                try:
-                    watch._removed = True
-                    close_watch(watch)
-                    return True
-                except pywintypes.error:
-                    pass
-        return False
+            return self.__remove_watch(watch)
+
+    def remove_all_watches(self):
+        with self.__lock:
+            for watch in self.__key_to_watch.itervalues():
+                self.__remove_watch(watch)
 
     def read_events(self):
         try:

@@ -30,6 +30,9 @@ class FSMonitorThread(Thread):
     def remove_watch(self, watch):
         self.__monitor.remove_watch(watch)
 
+    def remove_all_watches(self):
+        self.__monitor.remove_all_watches()
+
     def run(self):
         while module_loaded and self.__running:
             for event in self.__monitor.read_events():
@@ -37,6 +40,7 @@ class FSMonitorThread(Thread):
 
     def stop(self):
         if self.__monitor.watches:
+            self.remove_all_watches()
             self.__running = False
             self.join()
 

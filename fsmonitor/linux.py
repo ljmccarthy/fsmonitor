@@ -111,7 +111,9 @@ class FSMonitor(object):
             self.close()
 
     def close(self):
-        os.close(self.__fd)
+        if self.__fd is not None:
+            os.close(self.__fd)
+            self.__fd = None
 
     def add_dir_watch(self, path, flags=FSEvent.All, user=None):
         flags |= FSEvent.DeleteSelf
@@ -129,6 +131,10 @@ class FSMonitor(object):
 
     def remove_watch(self, watch):
         return inotify_rm_watch(self.__fd, watch._wd) != -1
+
+    def remove_all_watches(self):
+        for wd in self.__wd_to_watch.iterkeys():
+            inotify_rm_watch(self.__fd, wd)
 
     def read_events(self):
         try:
