@@ -133,8 +133,9 @@ class FSMonitor(object):
         return inotify_rm_watch(self.__fd, watch._wd) != -1
 
     def remove_all_watches(self):
-        for wd in self.__wd_to_watch.iterkeys():
-            inotify_rm_watch(self.__fd, wd)
+        with self.__lock:
+            for wd in self.__wd_to_watch.iterkeys():
+                inotify_rm_watch(self.__fd, wd)
 
     def read_events(self):
         try:
