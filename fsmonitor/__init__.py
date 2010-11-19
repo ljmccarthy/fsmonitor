@@ -1,6 +1,6 @@
 import sys
 import threading
-from .common import *
+from .common import FSEvent, FSMonitorError, FSMonitorOSError
 
 # set to None when unloaded
 module_loaded = True
@@ -51,7 +51,6 @@ class FSMonitorThread(threading.Thread):
         if self.__monitor.watches:
             self.remove_all_watches()
             self.__running = False
-            self.join()
 
     def read_events(self):
         with self.__events_lock:
