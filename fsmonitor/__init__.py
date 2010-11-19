@@ -1,5 +1,5 @@
 import sys
-from threading import Thread
+import threading
 from .common import *
 
 # set to None when unloaded
@@ -12,12 +12,14 @@ elif sys.platform == "win32":
 else:
     raise ImportError("Unsupported platform: %s" % sys.platform)
 
-class FSMonitorThread(Thread):
-    def __init__(self, callback, *args, **kwargs):
-        Thread.__init__(self)
+class FSMonitorThread(threading.Thread):
+    def __init__(self, callback=None):
+        threading.Thread.__init__(self)
         self.__callback = callback
         self.__running = True
-        self.__monitor = FSMonitor(*args, **kwargs)
+        self.__monitor = FSMonitor()
+        self.__events = []
+        self.__events_lock = threading.Lock()
         self.daemon = True
         self.start()
 
@@ -35,14 +37,27 @@ class FSMonitorThread(Thread):
 
     def run(self):
         while module_loaded and self.__running:
-            for event in self.__monitor.read_events():
-                self.__callback(event)
+            try:
+                for event in self.__monitor.read_events():
+                    if self.__callback:
+                        self.__callback(event)
+                    else:
+                        with self.__events_lock:
+                            self.__events.append(event)
+            except Exception:
+                pass
 
     def stop(self):
         if self.__monitor.watches:
             self.remove_all_watches()
             self.__running = False
             self.join()
+
+    def read_events(self):
+        with self.__events_lock:
+            events = self.__events
+            self.__events = []
+            return events
 
 __all__ = (
     "FSMonitor",
