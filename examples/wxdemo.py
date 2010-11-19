@@ -8,9 +8,6 @@ class DemoFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title="FSMonitor wxWidgets Demo", size=(600, 800))
 
-        self.monitor = FSMonitorThread(
-            lambda evt: wx.CallAfter(self.OnFileSystemChanged, evt))
-
         self.list = wx.ListBox(self)
         btn_add = wx.Button(self, label="&Add")
         btn_remove = wx.Button(self, label="&Remove")
@@ -35,11 +32,13 @@ class DemoFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnRemove, btn_remove)
         self.Bind(wx.EVT_BUTTON, self.OnClear, btn_clear)
 
+        self.monitor = FSMonitorThread()
+        self.monitor_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnMonitorTimer, self.monitor_timer)
+        self.monitor_timer.Start(100)
+
     def OnClose(self, evt):
         self.Hide()
-        wx.CallAfter(self.Shutdown)
-
-    def Shutdown(self):
         self.monitor.stop()
         self.Destroy()
 
@@ -71,12 +70,11 @@ class DemoFrame(wx.Frame):
     def OnClear(self, evt):
         self.log.Clear()
 
-    def OnFileSystemChanged(self, evt):
-        if isinstance(self, wx._core._wxPyDeadObject):
-            return
-        path = os.path.join(evt.watch.path, evt.name)
-        message = "%s %s\n" % (evt.action_name, path)
-        self.log.AppendText(message)
+    def OnMonitorTimer(self, evt):
+        for evt in self.monitor.read_events():
+            path = os.path.join(evt.watch.path, evt.name)
+            message = "%s %s\n" % (evt.action_name, path)
+            self.log.AppendText(message)
 
 if __name__ == "__main__":
     app = wx.PySimpleApp()
