@@ -1,6 +1,6 @@
 import os, struct, threading
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32, get_errno
-from .common import *
+from .common import FSEvent, FSMonitorOSError
 
 # set to None when unloaded
 module_loaded = True

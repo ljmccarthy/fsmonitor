@@ -1,7 +1,7 @@
 import os, threading
 import win32file, win32con, pywintypes
 import ctypes
-from .common import *
+from .common import FSEvent, FSMonitorError
 
 # set to None when unloaded
 module_loaded = True
