@@ -1,3 +1,12 @@
+# Copyright (c) 2010 Luke McCarthy <luke@iogopro.co.uk>
+#
+# This is free software released under the MIT license.
+# See COPYING file for details, or visit:
+# http://www.opensource.org/licenses/mit-license.php
+#
+# The file is part of FSMonitor, a file-system monitoring library.
+# https://github.com/shaurz/fsmonitor
+
 import os, threading
 import win32file, win32con, pywintypes
 import ctypes

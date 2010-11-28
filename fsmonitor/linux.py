@@ -1,3 +1,12 @@
+# Copyright (c) 2010 Luke McCarthy <luke@iogopro.co.uk>
+#
+# This is free software released under the MIT license.
+# See COPYING file for details, or visit:
+# http://www.opensource.org/licenses/mit-license.php
+#
+# The file is part of FSMonitor, a file-system monitoring library.
+# https://github.com/shaurz/fsmonitor
+
 import os, struct, threading
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32, get_errno
 from .common import FSEvent, FSMonitorOSError
