@@ -36,6 +36,8 @@ needs to be re-called repeatedly to get more events::
 
 The FSMonitorThread class can be used to receive events asynchronously with a callback.
 The callback will be called from another thread so it is responsible for thread-safety.
+If a callback is not specified, the thread will collect events in a list which can be
+read by calling read_events().
 
 More Details
 ------------
@@ -45,7 +47,7 @@ See the example code in the examples directory.
 Contact Details
 ---------------
 
-Please send any comments or requests to: luke@iogopro.co.uk
+Please send any comments or questions to: luke@iogopro.co.uk
 
 Please report bugs on the `github issue tracker <http://github.com/shaurz/fsmonitor/issues>`_.
 
