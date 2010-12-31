@@ -151,8 +151,9 @@ class FSMonitor(object):
             s = os.read(self.__fd, 1024)
         except OSError, e:
             raise FSMonitorOSError(*e.args)
+        events = []
         if not module_loaded:
-            return
+            return events
         for wd, mask, cookie, name in parse_events(s):
             with self.__lock:
                 watch = self.__wd_to_watch.get(wd)
@@ -162,7 +163,7 @@ class FSMonitor(object):
                     if mask & bit:
                         action = action_map.get(bit)
                         if action is not None and (action & watch.flags):
-                            yield FSEvent(watch, action, name)
+                            events.append(FSEvent(watch, action, name))
                     bit <<= 1
                 if mask & IN_IGNORED:
                     with self.__lock:
@@ -170,6 +171,7 @@ class FSMonitor(object):
                             del self.__wd_to_watch[wd]
                         except KeyError:
                             pass
+        return events
 
     @property
     def watches(self):

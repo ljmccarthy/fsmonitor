@@ -160,20 +160,22 @@ class FSMonitor(object):
 
     def read_events(self):
         try:
+            events = []
             rc, num, key, _ = win32file.GetQueuedCompletionStatus(self.__cphandle, 1000)
             if rc == 0:
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
                     if watch is not None and not watch._removed:
                         for evt in process_events(watch, num):
-                            yield evt
+                            events.append(evt)
             elif rc == 5:
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
                     if watch is not None:
                         close_watch(watch)
                         del self.__key_to_watch[key]
-                        yield FSEvent(watch, FSEvent.DeleteSelf)
+                        events.append(FSEvent(watch, FSEvent.DeleteSelf))
+            return events
         except pywintypes.error, e:
             raise FSMonitorWindowsError(*e.args)
 
