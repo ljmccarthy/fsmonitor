@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Luke McCarthy <luke@iogopro.co.uk>
+# Copyright (c) 2010, 2012 Luke McCarthy <luke@iogopro.co.uk>
 #
 # This is free software released under the MIT license.
 # See COPYING file for details, or visit:
@@ -19,7 +19,7 @@ if sys.platform == "linux2":
 elif sys.platform == "win32":
     from .win32 import FSMonitor
 else:
-    raise ImportError("Unsupported platform: %s" % sys.platform)
+    from .polling import FSMonitor
 
 class FSMonitorThread(threading.Thread):
     def __init__(self, callback=None):
