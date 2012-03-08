@@ -6,6 +6,7 @@ Supported Platforms
 
 * Linux 2.6 (inotify)
 * Windows (ReadDirectoryChangesW with I/O completion ports)
+* Any other platform (polling)
 
 Installation
 ------------
