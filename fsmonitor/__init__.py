@@ -24,34 +24,34 @@ else:
 class FSMonitorThread(threading.Thread):
     def __init__(self, callback=None):
         threading.Thread.__init__(self)
-        self.__callback = callback
+        self.monitor = FSMonitor()
+        self.callback = callback
         self.__running = True
-        self.__monitor = FSMonitor()
         self.__events = []
         self.__events_lock = threading.Lock()
         self.daemon = True
         self.start()
 
     def add_dir_watch(self, path, flags=FSEvent.All, user=None):
-        return self.__monitor.add_dir_watch(path, flags=flags, user=user)
+        return self.monitor.add_dir_watch(path, flags=flags, user=user)
 
     def add_file_watch(self, path, flags=FSEvent.All, user=None):
-        return self.__monitor.add_file_watch(path, flags=flags, user=user)
+        return self.monitor.add_file_watch(path, flags=flags, user=user)
 
     def remove_watch(self, watch):
-        self.__monitor.remove_watch(watch)
+        self.monitor.remove_watch(watch)
 
     def remove_all_watches(self):
-        self.__monitor.remove_all_watches()
+        self.monitor.remove_all_watches()
         with self.__events_lock:
             self.__events = []
 
     def run(self):
         while module_loaded and self.__running:
             try:
-                for event in self.__monitor.read_events():
-                    if self.__callback:
-                        self.__callback(event)
+                for event in self.monitor.read_events():
+                    if self.callback:
+                        self.callback(event)
                     else:
                         with self.__events_lock:
                             self.__events.append(event)
@@ -59,7 +59,7 @@ class FSMonitorThread(threading.Thread):
                 pass
 
     def stop(self):
-        if self.__monitor.watches:
+        if self.monitor.watches:
             self.remove_all_watches()
             self.__running = False
 
