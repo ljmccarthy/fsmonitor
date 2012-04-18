@@ -26,9 +26,9 @@ class FSMonitorThread(threading.Thread):
         threading.Thread.__init__(self)
         self.monitor = FSMonitor()
         self.callback = callback
-        self.__running = True
-        self.__events = []
-        self.__events_lock = threading.Lock()
+        self._running = True
+        self._events = []
+        self._events_lock = threading.Lock()
         self.daemon = True
         self.start()
 
@@ -43,30 +43,30 @@ class FSMonitorThread(threading.Thread):
 
     def remove_all_watches(self):
         self.monitor.remove_all_watches()
-        with self.__events_lock:
-            self.__events = []
+        with self._events_lock:
+            self._events = []
 
     def run(self):
-        while module_loaded and self.__running:
+        while module_loaded and self._running:
             try:
                 for event in self.monitor.read_events():
                     if self.callback:
                         self.callback(event)
                     else:
-                        with self.__events_lock:
-                            self.__events.append(event)
+                        with self._events_lock:
+                            self._events.append(event)
             except Exception:
                 pass
 
     def stop(self):
         if self.monitor.watches:
             self.remove_all_watches()
-            self.__running = False
+            self._running = False
 
     def read_events(self):
-        with self.__events_lock:
-            events = self.__events
-            self.__events = []
+        with self._events_lock:
+            events = self._events
+            self._events = []
             return events
 
 __all__ = (
