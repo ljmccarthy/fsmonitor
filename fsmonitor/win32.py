@@ -65,6 +65,7 @@ class FSMonitorWatch(object):
         self.path = path
         self.flags = flags
         self.user = user
+        self.enabled = True
         self._recursive = recursive
         self._win32_flags = convert_flags(flags)
         self._key = None
@@ -158,6 +159,12 @@ class FSMonitor(object):
             for watch in self.__key_to_watch.itervalues():
                 self.__remove_watch(watch)
 
+    def enable_watch(self, watch, enable=True):
+        watch.enabled = enable
+
+    def disable_watch(self, watch):
+        watch.enabled = False
+
     def read_events(self):
         try:
             events = []
@@ -165,13 +172,13 @@ class FSMonitor(object):
             if rc == 0:
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
-                    if watch is not None and not watch._removed:
+                    if watch is not None and watch.enabled and not watch._removed:
                         for evt in process_events(watch, num):
                             events.append(evt)
             elif rc == 5:
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
-                    if watch is not None:
+                    if watch is not None and watch.enabled:
                         close_watch(watch)
                         del self.__key_to_watch[key]
                         events.append(FSEvent(watch, FSEvent.DeleteSelf))

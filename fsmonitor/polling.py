@@ -19,6 +19,7 @@ class FSMonitorWatch(object):
         self.path = path
         self.flags = flags
         self.user = user
+        self.enabled = True
         self._timestamp = time.time()
         try:
             self._contents = get_dir_contents(path)
@@ -76,6 +77,12 @@ class FSMonitor(object):
         with self.__lock:
             self.__dir_watches.clear()
 
+    def enable_watch(self, watch, enable=True):
+        watch.enabled = enable
+
+    def disable_watch(self, watch):
+        watch.enabled = False
+
     def read_events(self):
         now = start_time = time.time()
         watches = self.watches
@@ -89,6 +96,9 @@ class FSMonitor(object):
                 if tdiff < self.polling_interval:
                     time.sleep(self.polling_interval - tdiff)
             watch._timestamp = now
+
+            if not watch.enabled:
+                continue
 
             try:
                 new_contents = get_dir_contents(watch.path)
