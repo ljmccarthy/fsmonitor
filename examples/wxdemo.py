@@ -32,10 +32,7 @@ class DemoFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnRemove, btn_remove)
         self.Bind(wx.EVT_BUTTON, self.OnClear, btn_clear)
 
-        self.monitor = FSMonitorThread()
-        self.monitor_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.OnMonitorTimer, self.monitor_timer)
-        self.monitor_timer.Start(100)
+        self.monitor = FSMonitorThread(callback=lambda event: wx.CallAfter(self.OnFSEvent, event))
 
     def OnClose(self, evt):
         self.Hide()
@@ -70,11 +67,10 @@ class DemoFrame(wx.Frame):
     def OnClear(self, evt):
         self.log.Clear()
 
-    def OnMonitorTimer(self, evt):
-        for evt in self.monitor.read_events():
-            path = os.path.join(evt.watch.path, evt.name)
-            message = "%s %s\n" % (evt.action_name, path)
-            self.log.AppendText(message)
+    def OnFSEvent(self, evt):
+        path = os.path.join(evt.watch.path, evt.name)
+        message = "%s %s\n" % (evt.action_name, path)
+        self.log.AppendText(message)
 
 if __name__ == "__main__":
     app = wx.PySimpleApp()
