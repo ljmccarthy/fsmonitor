@@ -49,12 +49,13 @@ class FSMonitorThread(threading.Thread):
     def run(self):
         while module_loaded and self._running:
             try:
-                for event in self.monitor.read_events():
-                    if self.callback:
+                events = self.monitor.read_events()
+                if self.callback:
+                    for event in events:
                         self.callback(event)
-                    else:
-                        with self._events_lock:
-                            self._events.append(event)
+                else:
+                    with self._events_lock:
+                        self._events.extend(events)
             except Exception:
                 pass
 
