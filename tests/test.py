@@ -4,27 +4,27 @@ from fsmonitor import FSMonitorThread
 
 class TestFSMonitor(object):
     def __init__(self):
-        self.__monitor = FSMonitorThread(self.__callback)
-        self.__lock = threading.Lock()
-        self.__events = []
+        self.monitor = FSMonitorThread(self.__callback)
+        self._lock = threading.Lock()
+        self._events = []
 
     def __callback(self, evt):
-        with self.__lock:
-            self.__events.append(evt)
+        with self._lock:
+            self._events.append(evt)
 
     @property
     def events(self):
-        with self.__lock:
-            return list(self.__events)
+        with self._lock:
+            return list(self._events)
 
     def add_dir_watch(self, *args, **kwargs):
-        return self.__monitor.add_dir_watch(*args, **kwargs)
+        return self.monitor.add_dir_watch(*args, **kwargs)
 
     def add_file_watch(self, *args, **kwargs):
-        return self.__monitor.add_file_watch(*args, **kwargs)
+        return self.monitor.add_file_watch(*args, **kwargs)
 
     def remove_watch(self, *args, **kwargs):
-        self.__monitor.remove_watch(*args, **kwargs)
+        self.monitor.remove_watch(*args, **kwargs)
 
     def event_happened(self, action=None, name=None, path=None):
         for evt in self.events:
