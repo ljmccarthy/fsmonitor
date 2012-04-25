@@ -69,6 +69,7 @@ class FSMonitorWatch(object):
         self._recursive = recursive
         self._win32_flags = convert_flags(flags)
         self._key = None
+        self._hDir = None
         self._hDir = get_dir_handle(path)
         self._overlapped = pywintypes.OVERLAPPED()
         self._buf = ctypes.create_string_buffer(1024)
