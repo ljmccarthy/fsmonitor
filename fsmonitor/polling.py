@@ -31,14 +31,17 @@ class FSMonitorWatch(object):
     def __repr__(self):
         return "<FSMonitorWatch %r>" % self.path
 
-def _compare_contents(watch, new_contents, events_out):
+def _compare_contents(watch, new_contents, events_out, before):
     name_to_new_stat = dict(new_contents)
 
     for name, old_stat in watch._contents:
         new_stat = name_to_new_stat.get(name)
         if new_stat:
-            if new_stat.st_atime != old_stat.st_atime:
+            if new_stat.st_atime != old_stat.st_atime and new_stat.st_atime < before:
                 events_out.append(FSEvent(watch, FSEvent.Access, name))
+            else:
+                old_stat.st_atime = new_stat.st_mtime
+
             if new_stat.st_mtime != old_stat.st_mtime:
                 events_out.append(FSEvent(watch, FSEvent.Modify, name))
         else:
@@ -100,6 +103,7 @@ class FSMonitor(object):
             if not watch.enabled:
                 continue
 
+            before = time.time()
             try:
                 new_contents = get_dir_contents(watch.path)
             except OSError, e:
@@ -109,7 +113,7 @@ class FSMonitor(object):
                         watch._contents = []
                         events.append(FSEvent(watch, FSEvent.DeleteSelf))
             else:
-                _compare_contents(watch, new_contents, events)
+                _compare_contents(watch, new_contents, events, before)
                 watch._deleted = False
                 watch._contents = new_contents
 
