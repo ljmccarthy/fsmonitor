@@ -39,8 +39,6 @@ def _compare_contents(watch, new_contents, events_out, before):
         if new_stat:
             if new_stat.st_atime != old_stat.st_atime and new_stat.st_atime < before:
                 events_out.append(FSEvent(watch, FSEvent.Access, name))
-            else:
-                old_stat.st_atime = new_stat.st_mtime
 
             if new_stat.st_mtime != old_stat.st_mtime:
                 events_out.append(FSEvent(watch, FSEvent.Modify, name))
@@ -51,6 +49,12 @@ def _compare_contents(watch, new_contents, events_out, before):
     for name, new_stat in new_contents:
         if name not in old_names:
             events_out.append(FSEvent(watch, FSEvent.Create, name))
+
+def round_fs_resolution(t):
+    if sys.platform == "win32":
+        return t // 2 * 2
+    else:
+        return t // 1
 
 class FSMonitor(object):
     def __init__(self):
@@ -103,7 +107,7 @@ class FSMonitor(object):
             if not watch.enabled:
                 continue
 
-            before = time.time()
+            before = round_fs_resolution(time.time())
             try:
                 new_contents = get_dir_contents(watch.path)
             except OSError, e:
