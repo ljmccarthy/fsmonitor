@@ -7,7 +7,7 @@
 # The file is part of FSMonitor, a file-system monitoring library.
 # https://github.com/shaurz/fsmonitor
 
-import os, time, threading, errno
+import sys, os, time, threading, errno
 from .common import FSEvent, FSMonitorError
 
 def get_dir_contents(path):
