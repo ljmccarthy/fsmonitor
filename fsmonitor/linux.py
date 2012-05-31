@@ -7,7 +7,7 @@
 # The file is part of FSMonitor, a file-system monitoring library.
 # https://github.com/shaurz/fsmonitor
 
-import os, struct, threading
+import os, struct, threading, errno
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32, get_errno
 from .common import FSEvent, FSMonitorOSError
 
@@ -154,13 +154,18 @@ class FSMonitor(object):
         watch.enabled = False
 
     def read_events(self):
-        try:
-            s = os.read(self.__fd, 1024)
-        except OSError, e:
-            raise FSMonitorOSError(*e.args)
+        while True:
+            try:
+                s = os.read(self.__fd, 1024)
+                break
+            except OSError, e:
+                if e.errno != errno.EINTR:
+                    raise FSMonitorOSError(*e.args)
+
         events = []
         if not module_loaded:
             return events
+
         for wd, mask, cookie, name in parse_events(s):
             with self.__lock:
                 watch = self.__wd_to_watch.get(wd)
