@@ -39,8 +39,6 @@ class FSMonitorDirWatch(object):
         return [(filename, os.stat(os.path.join(path, filename)))
                 for filename in os.listdir(path)]
 
-    state = property(getstate, setstate, delstate)
-
     def getstate(self):
         return self._contents
 
@@ -51,6 +49,8 @@ class FSMonitorDirWatch(object):
     def setstate(self, state):
         self._contents = state
         self._deleted = False
+
+    state = property(getstate, setstate, delstate)
 
 
 class FSMonitorFileWatch(object):
@@ -75,8 +75,6 @@ class FSMonitorFileWatch(object):
     def new_state(cls, path):
         return os.stat(path)
 
-    state = property(getstate, setstate, delstate)
-
     def getstate(self):
         return self._stat
 
@@ -87,6 +85,8 @@ class FSMonitorFileWatch(object):
     def setstate(self, state):
         self._stat = state
         self._deleted = False
+
+    state = property(getstate, setstate, delstate)
 
 
 class FSMonitorWatch(object):
