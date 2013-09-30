@@ -25,10 +25,10 @@ class FSMonitorDirWatch(object):
         self.enabled = True
         self._timestamp = time.time()
         try:
-            self._state = get_dir_contents(path)
+            self._contents = get_dir_contents(path)
             self._deleted = False
         except OSError, e:
-            self._state = []
+            self._contents = []
             self._deleted = (e.errno == errno.ENOENT)
 
     def __repr__(self):
