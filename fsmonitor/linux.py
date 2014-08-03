@@ -7,7 +7,7 @@
 # The file is part of FSMonitor, a file-system monitoring library.
 # https://github.com/shaurz/fsmonitor
 
-import os, struct, threading, errno
+import os, struct, threading, errno, select
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32, get_errno
 from .common import FSEvent, FSMonitorOSError
 
@@ -153,7 +153,12 @@ class FSMonitor(object):
     def disable_watch(self, watch):
         watch.enabled = False
 
-    def read_events(self):
+    def read_events(self, timeout=None):
+        if timeout is not None:
+            rs, ws, xs = select.select([self.__fd], [], [], timeout)
+            if self.__fd not in rs:
+                return []
+
         while True:
             try:
                 s = os.read(self.__fd, 1024)

@@ -9,6 +9,7 @@
 
 import sys
 import threading
+import traceback
 from .common import FSEvent, FSMonitorError, FSMonitorOSError
 
 # set to None when unloaded
@@ -57,7 +58,7 @@ class FSMonitorThread(threading.Thread):
                     with self._events_lock:
                         self._events.extend(events)
             except Exception:
-                pass
+                print "Exception in FSMonitorThread:\n" + traceback.format_exc()
 
     def stop(self):
         if self.monitor.watches:

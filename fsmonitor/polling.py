@@ -181,7 +181,7 @@ class FSMonitor(object):
     def disable_watch(self, watch):
         watch.enabled = False
 
-    def read_events(self):
+    def read_events(self, timeout=None):
         now = start_time = time.time()
         watches = self.watches
         watches.sort(key=lambda watch: abs(now - watch._timestamp), reverse=True)
