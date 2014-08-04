@@ -100,7 +100,7 @@ def process_events(watch, num):
             yield FSEvent(watch, action, name)
     try:
         read_changes(watch)
-    except pywintypes.error, e:
+    except pywintypes.error as e:
         if e.args[0] == 5:
             close_watch(watch)
             yield FSEvent(watch, FSEvent.DeleteSelf)
@@ -135,7 +135,7 @@ class FSMonitor(object):
                 watch._key = key
                 self.__key_to_watch[key] = watch
             return watch
-        except pywintypes.error, e:
+        except pywintypes.error as e:
             raise FSMonitorWindowsError(*e.args)
 
     def add_file_watch(self, path, flags=FSEvent.All, user=None):
@@ -185,7 +185,7 @@ class FSMonitor(object):
                         del self.__key_to_watch[key]
                         events.append(FSEvent(watch, FSEvent.DeleteSelf))
             return events
-        except pywintypes.error, e:
+        except pywintypes.error as e:
             raise FSMonitorWindowsError(*e.args)
 
     @property

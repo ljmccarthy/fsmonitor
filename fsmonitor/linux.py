@@ -163,7 +163,7 @@ class FSMonitor(object):
             try:
                 s = os.read(self.__fd, 1024)
                 break
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.EINTR:
                     raise FSMonitorOSError(*e.args)
 

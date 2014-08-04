@@ -27,7 +27,7 @@ class FSMonitorDirWatch(object):
         try:
             self._contents = get_dir_contents(path)
             self._deleted = False
-        except OSError, e:
+        except OSError as e:
             self._contents = []
             self._deleted = (e.errno == errno.ENOENT)
 
@@ -64,7 +64,7 @@ class FSMonitorFileWatch(object):
         try:
             self._stat = os.stat(path)
             self._deleted = False
-        except OSError, e:
+        except OSError as e:
             self._stat = None
             self._deleted = (e.errno == errno.ENOENT)
 
@@ -99,7 +99,7 @@ class FSMonitorWatch(object):
         try:
             self._contents = get_dir_contents(path)
             self._deleted = False
-        except OSError, e:
+        except OSError as e:
             self._contents = []
             self._deleted = (e.errno == errno.ENOENT)
 
@@ -201,7 +201,7 @@ class FSMonitor(object):
             before = round_fs_resolution(time.time())
             try:
                 new_state = watch.new_state(watch.path)
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ENOENT:
                     if not watch._deleted:
                         del watch.state

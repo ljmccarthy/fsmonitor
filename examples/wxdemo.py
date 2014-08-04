@@ -42,7 +42,7 @@ class DemoFrame(wx.Frame):
     def AddPath(self, path):
         try:
             watch = self.monitor.add_dir_watch(path)
-        except OSError, e:
+        except OSError as e:
             dlg = wx.MessageDialog(self, str(e), "Error", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
