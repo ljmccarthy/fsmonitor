@@ -125,9 +125,8 @@ class FSMonitor(object):
             os.close(self.__fd)
             self.__fd = None
 
-    def add_dir_watch(self, path, flags=FSEvent.All, user=None):
-        flags |= FSEvent.DeleteSelf
-        inotify_flags = convert_flags(flags)
+    def _add_watch(self, path, flags, user, inotify_flags=0):
+        inotify_flags |= convert_flags(flags) | IN_DELETE_SELF
         wd = inotify_add_watch(self.__fd, path, inotify_flags)
         if wd == -1:
             errno = get_errno()
@@ -137,7 +136,11 @@ class FSMonitor(object):
             self.__wd_to_watch[wd] = watch
         return watch
 
-    add_file_watch = add_dir_watch
+    def add_dir_watch(self, path, flags=FSEvent.All, user=None):
+        return self._add_watch(path, flags, user, IN_ONLYDIR)
+
+    def add_file_watch(self, path, flags=FSEvent.All, user=None):
+        return self._add_watch(path, flags, user)
 
     def remove_watch(self, watch):
         return inotify_rm_watch(self.__fd, watch._wd) != -1
