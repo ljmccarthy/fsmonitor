@@ -175,8 +175,7 @@ class FSMonitor(object):
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
                     if watch is not None and watch.enabled and not watch._removed:
-                        for evt in process_events(watch, num):
-                            events.append(evt)
+                        events.extend(process_events(watch, num))
             elif rc == 5:
                 with self.__lock:
                     watch = self.__key_to_watch.get(key)
