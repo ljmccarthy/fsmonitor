@@ -167,7 +167,11 @@ class FSMonitor(object):
         watch.enabled = False
 
     def read_events(self, timeout=None):
-        timeout_ms = timeout * 1000 if timeout is not None else 0xFFFFFFFF
+        timeout_ms = 0xFFFFFFFF
+        if timeout is not None:
+            timeout_ms = int(timeout * 1000)
+            if timeout_ms < 0 or timeout_ms >= 0xFFFFFFFF:
+                raise ValueError("Timeout value out of range")
         try:
             events = []
             rc, num, key, _ = win32file.GetQueuedCompletionStatus(self.__cphandle, timeout_ms)
