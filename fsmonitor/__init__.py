@@ -23,21 +23,27 @@ else:
     from .polling import FSMonitor
 
 class FSMonitorThread(threading.Thread):
-    def __init__(self, callback=None):
+    def __init__(self, callback=None, autostart=True):
         threading.Thread.__init__(self)
         self.monitor = FSMonitor()
         self.callback = callback
-        self._running = True
         self._events = []
         self._events_lock = threading.Lock()
         self.daemon = True
-        self.start()
+        if autostart:
+            self.start()
+        else:
+            self._running = False
 
-    def add_dir_watch(self, path, flags=FSEvent.All, user=None):
-        return self.monitor.add_dir_watch(path, flags=flags, user=user)
+    def start(self):
+        self._running = True
+        super(FSMonitorThread, self).start()
+            
+    def add_dir_watch(self, path, flags=FSEvent.All, user=None, **kwargs):
+        return self.monitor.add_dir_watch(path, flags=flags, user=user, **kwargs)
 
-    def add_file_watch(self, path, flags=FSEvent.All, user=None):
-        return self.monitor.add_file_watch(path, flags=flags, user=user)
+    def add_file_watch(self, path, flags=FSEvent.All, user=None, **kwargs):
+        return self.monitor.add_file_watch(path, flags=flags, user=user, **kwargs)
 
     def remove_watch(self, watch):
         self.monitor.remove_watch(watch)
