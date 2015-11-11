@@ -7,6 +7,8 @@
 # The file is part of FSMonitor, a file-system monitoring library.
 # https://github.com/shaurz/fsmonitor
 
+from __future__ import print_function
+
 import sys
 import threading
 import traceback
@@ -64,7 +66,7 @@ class FSMonitorThread(threading.Thread):
                     with self._events_lock:
                         self._events.extend(events)
             except Exception:
-                print "Exception in FSMonitorThread:\n" + traceback.format_exc()
+                print("Exception in FSMonitorThread:\n" + traceback.format_exc())
 
     def stop(self):
         if self.monitor.watches:
