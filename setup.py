@@ -7,5 +7,8 @@ setup(
     author = "Luke McCarthy",
     author_email = "luke@iogopro.co.uk",
     url = "http://github.com/shaurz/fsmonitor",
+    install_requires=[
+        'pypiwin32',
+    ],
     packages = ["fsmonitor"],
 )
