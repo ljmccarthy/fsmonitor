@@ -17,7 +17,7 @@ from .common import FSEvent, FSMonitorError, FSMonitorOSError
 # set to None when unloaded
 module_loaded = True
 
-if sys.platform == "linux2":
+if sys.platform.startswith("linux"):
     from .linux import FSMonitor
 elif sys.platform == "win32":
     from .win32 import FSMonitor
