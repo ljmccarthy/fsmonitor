@@ -1,5 +1,10 @@
 from distutils.core import setup
 from os.path import exists
+from platform import system
+
+requires = []
+if system == "Windows":
+    requires = ["pypiwin32"]
 
 setup(
     name = "fsmonitor",
@@ -11,8 +16,6 @@ setup(
     author_email = "luke@iogopro.co.uk",
     licence="MIT",
     url = "http://github.com/shaurz/fsmonitor",
-    install_requires=[
-        'pypiwin32',
-    ],
+    install_requires=requires,
     packages = ["fsmonitor"],
 )
