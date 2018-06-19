@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from distutils.core import setup
 from os.path import exists
 from platform import system
