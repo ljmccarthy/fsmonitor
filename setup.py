@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from platform import system
-
-requires = []
-if system == "Windows":
-    requires = ["pypiwin32"]
 
 version = "0.1"
 
@@ -27,6 +22,6 @@ setup(
     },
     keywords=["filesystem", "monitor"],
     platforms="Any",
-    install_requires=requires,
+    install_requires=["pypiwin32; sys_platform='win32'"],
     packages=["fsmonitor"],
 )
