@@ -12,6 +12,7 @@ setup(
     version="0.1",
     description="Filesystem monitoring",
     long_description=open('README.rst').read(),
+    long_description_content_type="text/x-rst",
     author="Luke McCarthy",
     author_email="luke@iogopro.co.uk",
     licence="MIT",
