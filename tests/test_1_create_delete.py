@@ -3,6 +3,7 @@ from utils import *
 from fsmonitor import *
 
 def test_1_create_delete():
+    fsm_test = FSMonitorTest()
     w = fsm_test.add_dir_watch(tempdir)
     touch(get_testpath("x"))
     remove(get_testpath("x"))
