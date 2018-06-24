@@ -1,5 +1,5 @@
 import os, time
-from test import *
+from utils import *
 from fsmonitor import *
 
 w = test.add_dir_watch(tempdir)

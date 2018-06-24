@@ -1,5 +1,5 @@
 import os, time, errno
-from test import *
+from utils import *
 from fsmonitor import *
 
 try:
