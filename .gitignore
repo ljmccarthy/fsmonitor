@@ -1,4 +1,6 @@
 /.cache/
 /.pytest_cache/
+/build/
+/dist/
 /fsmonitor.egg-info/
 *.py[co]

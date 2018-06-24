@@ -1,0 +1,2 @@
+global-include *.py
+include COPYING MANIFEST.in README.rst
