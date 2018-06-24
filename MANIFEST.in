@@ -1,2 +1,2 @@
 global-include *.py
-include COPYING MANIFEST.in README.rst
+include COPYING MANIFEST.in README.rst tox.ini

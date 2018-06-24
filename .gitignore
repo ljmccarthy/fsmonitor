@@ -1,5 +1,6 @@
 /.cache/
 /.pytest_cache/
+/.tox/
 /build/
 /dist/
 /fsmonitor.egg-info/
