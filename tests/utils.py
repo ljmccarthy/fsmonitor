@@ -1,5 +1,4 @@
 import sys, os, shutil, threading
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from fsmonitor import FSMonitorThread
 
 class FSMonitorTest(object):
