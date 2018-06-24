@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 version = "0.1"
 
@@ -12,7 +12,7 @@ setup(
     long_description_content_type="text/x-rst",
     author="Luke McCarthy",
     author_email="luke@iogopro.co.uk",
-    licence="MIT",
+    license="MIT",
     url="http://github.com/ljmccarthy/fsmonitor",
     download_url="https://pypi.org/project/fsmonitor/%s/" % version,
     project_urls={
@@ -22,6 +22,6 @@ setup(
     },
     keywords=["filesystem", "monitor"],
     platforms="Any",
-    install_requires=["pypiwin32; sys_platform='win32'"],
+    install_requires=["pypiwin32; sys_platform=='win32'"],
     packages=["fsmonitor"],
 )
