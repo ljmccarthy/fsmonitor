@@ -2,7 +2,7 @@ import sys, os, shutil, threading
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from fsmonitor import FSMonitorThread
 
-class TestFSMonitor(object):
+class _TestFSMonitor(object):
     def __init__(self):
         self.monitor = FSMonitorThread(self.__callback)
         self._lock = threading.Lock()
@@ -34,7 +34,7 @@ class TestFSMonitor(object):
                 return True
         return False
 
-test = TestFSMonitor()
+fsm_test = _TestFSMonitor()
 
 def mkdir(path):
     try:
@@ -62,7 +62,7 @@ if sys.platform == "win32":
 else:
     tempdir = "/tmp"
 
-def testpath(*args):
+def get_testpath(*args):
     return os.path.join(tempdir, *args)
 
 tempdir = os.path.join(tempdir, "fsmonitor-test")
@@ -70,11 +70,11 @@ shutil.rmtree(tempdir, ignore_errors=True)
 mkdir(tempdir)
 
 __all__ = (
-    "test",
+    "fsm_test",
     "mkdir",
     "remove",
     "touch",
     "truncate",
     "tempdir",
-    "testpath"
+    "get_testpath"
 )
