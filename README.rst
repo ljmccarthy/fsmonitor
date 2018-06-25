@@ -8,6 +8,12 @@ Supported Platforms
 * Windows (ReadDirectoryChangesW with I/O completion ports)
 * Any other platform (polling)
 
+Supported Python versions
+-------------------------
+
+* Python 2: tested with 2.7
+* Python 3: tested with 3.3+ on Linux
+
 Installation
 ------------
 

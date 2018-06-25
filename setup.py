@@ -24,4 +24,5 @@ setup(
     platforms="Any",
     install_requires=["pypiwin32; sys_platform=='win32'"],
     packages=["fsmonitor"],
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*',
 )

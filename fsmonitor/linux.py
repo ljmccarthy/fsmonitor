@@ -7,9 +7,10 @@
 # The file is part of FSMonitor, a file-system monitoring library.
 # https://github.com/shaurz/fsmonitor
 
-import os, struct, threading, errno, select
+import sys, os, struct, threading, errno, select
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_char_p, c_uint32, get_errno
 from .common import FSEvent, FSMonitorOSError
+from .compat import PY3
 
 # set to None when unloaded
 module_loaded = True
@@ -91,7 +92,7 @@ def parse_events(s):
     i = 0
     while i + 16 < len(s):
         wd, mask, cookie, length = struct.unpack_from("iIII", s, i)
-        name = s[i+16:i+16+length].rstrip("\0")
+        name = s[i+16:i+16+length].rstrip(b"\0")
         i += 16 + length
         yield wd, mask, cookie, name
 
@@ -127,6 +128,8 @@ class FSMonitor(object):
 
     def _add_watch(self, path, flags, user, inotify_flags=0):
         inotify_flags |= convert_flags(flags) | IN_DELETE_SELF
+        if PY3 and not isinstance(path, bytes):
+            path = path.encode(sys.getfilesystemencoding())
         wd = inotify_add_watch(self.__fd, path, inotify_flags)
         if wd == -1:
             errno = get_errno()
@@ -174,6 +177,7 @@ class FSMonitor(object):
         if not module_loaded:
             return events
 
+        fsencoding = sys.getfilesystemencoding()
         for wd, mask, cookie, name in parse_events(s):
             with self.__lock:
                 watch = self.__wd_to_watch.get(wd)
@@ -183,6 +187,8 @@ class FSMonitor(object):
                     if mask & bit:
                         action = action_map.get(bit)
                         if action is not None and (action & watch.flags):
+                            if PY3 and isinstance(name, bytes):
+                                name = name.decode(fsencoding)
                             events.append(FSEvent(watch, action, name))
                     bit <<= 1
                 if mask & IN_IGNORED:
