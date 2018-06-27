@@ -25,9 +25,9 @@ else:
     from .polling import FSMonitor
 
 class FSMonitorThread(threading.Thread):
-    def __init__(self, callback=None, autostart=True):
+    def __init__(self, callback=None, autostart=True, fsmonitor_class=None):
         threading.Thread.__init__(self)
-        self.monitor = FSMonitor()
+        self.monitor = (fsmonitor_class or FSMonitor)()
         self.callback = callback
         self._events = []
         self._events_lock = threading.Lock()
