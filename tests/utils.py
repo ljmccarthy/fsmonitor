@@ -2,8 +2,9 @@ import sys, os, shutil, threading
 from fsmonitor import FSMonitorThread
 
 class FSMonitorTest(object):
-    def __init__(self):
-        self.monitor = FSMonitorThread(self.__callback)
+    def __init__(self, fsmonitor_class=None):
+        self.monitor = FSMonitorThread(self.__callback,
+                                       fsmonitor_class=fsmonitor_class)
         self._lock = threading.Lock()
         self._events = []
 
