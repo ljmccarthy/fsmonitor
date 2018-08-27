@@ -54,8 +54,4 @@ See the example code in the examples directory.
 Contact Details
 ---------------
 
-Please send any comments or questions to: luke@iogopro.co.uk
-
-Please report bugs on the `github issue tracker <http://github.com/shaurz/fsmonitor/issues>`_.
-
--- Luke McCarthy
+Please report bugs on the `GitHub issue tracker <http://github.com/shaurz/fsmonitor/issues>`_.
